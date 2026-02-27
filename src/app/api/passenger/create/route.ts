@@ -26,7 +26,15 @@ export async function POST(request: Request) {
             }
         });
 
-        return NextResponse.json({ success: true, passenger: newPassenger });
+        // Return only safe fields, avoiding Prisma BigInts which break JSON stringify
+        return NextResponse.json({
+            success: true,
+            passenger: {
+                id: newPassenger.id,
+                name: newPassenger.name,
+                lastName: newPassenger.lastName
+            }
+        });
     } catch (error: any) {
         console.error('Create Passenger Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

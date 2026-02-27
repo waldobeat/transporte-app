@@ -22,8 +22,8 @@ export async function POST(request: Request) {
         const verification = await verifyAuthenticationResponse({
             response,
             expectedChallenge,
-            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || getExpectedOrigin(request.url),
-            expectedRPID: getRpID(request.url),
+            expectedOrigin: getExpectedOrigin(request),
+            expectedRPID: getRpID(request),
             credential: {
                 id: passenger.credentialID,
                 publicKey: Buffer.from(passenger.credentialPK, 'base64url'),

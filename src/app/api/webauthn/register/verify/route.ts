@@ -17,8 +17,8 @@ export async function POST(request: Request) {
         const verification = await verifyRegistrationResponse({
             response,
             expectedChallenge,
-            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || getExpectedOrigin(request.url),
-            expectedRPID: getRpID(request.url),
+            expectedOrigin: getExpectedOrigin(request),
+            expectedRPID: getRpID(request),
             requireUserVerification: true,
         });
 

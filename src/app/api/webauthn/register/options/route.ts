@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try {
-        const rpID = getRpID(request.url);
+        const rpID = getRpID(request);
         const tempId = crypto.randomUUID();
 
         // Using base64url or just string based on SimpleWebAuthn version

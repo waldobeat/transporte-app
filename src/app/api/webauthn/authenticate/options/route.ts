@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         }
 
         const options = await generateAuthenticationOptions({
-            rpID: getRpID(request.url),
+            rpID: getRpID(request),
             allowCredentials: [{
                 id: passenger.credentialID,
                 transports: ['internal'], // Prefer built-in scanners

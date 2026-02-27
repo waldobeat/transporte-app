@@ -20,8 +20,14 @@ model Passenger {
 }
 
 model Transport {
-  id          String    @id @default(cuid())
+  id          String    @id @default(uuid())
   passengerId String
   passenger   Passenger @relation(fields: [passengerId], references: [id])
   timestamp   DateTime  @default(now())
+}
+
+model AuthChallenge {
+  id        String   @id @default(uuid())
+  challenge String
+  createdAt DateTime @default(now())
 }

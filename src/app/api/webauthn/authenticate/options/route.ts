@@ -6,28 +6,18 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { id } = body;
-
-        if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
-
-        const passenger = await prisma.passenger.findUnique({ where: { id } });
-        if (!passenger) {
-            return NextResponse.json({ error: 'Passenger not found' }, { status: 404 });
-        }
-
         const options = await generateAuthenticationOptions({
             rpID: getRpID(request),
-            allowCredentials: [{
-                id: passenger.credentialID,
-                transports: ['internal'], // Prefer built-in scanners
-            }],
             userVerification: 'required',
+            // No allowCredentials array to enable Discoverable Credentials (Passkeys)
         });
 
-        saveChallenge(id, options.challenge);
+        // Save challenge to the new AuthChallenge table
+        const authChallenge = await prisma.authChallenge.create({
+            data: { challenge: options.challenge }
+        });
 
-        return NextResponse.json(options);
+        return NextResponse.json({ options, challengeId: authChallenge.id });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

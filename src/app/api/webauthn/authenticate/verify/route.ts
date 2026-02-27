@@ -7,18 +7,28 @@ import prisma from '@/lib/prisma';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { id, response } = body;
+        const { challengeId, response } = body;
 
-        const passenger = await prisma.passenger.findUnique({ where: { id } });
-        if (!passenger) {
-            return NextResponse.json({ error: 'Passenger not found' }, { status: 404 });
-        }
-
-        const expectedChallenge = await getExpectedChallenge(id);
-        if (!expectedChallenge) {
+        // 1. Get the challenge from the generic table
+        const authChallenge = await prisma.authChallenge.findUnique({ where: { id: challengeId } });
+        if (!authChallenge) {
             return NextResponse.json({ error: 'Challenge expired or not found' }, { status: 400 });
         }
 
+        const expectedChallenge = authChallenge.challenge;
+
+        // 2. Discover the passenger by their credential ID
+        const passenger = await prisma.passenger.findFirst({
+            where: { credentialID: response.id }
+        });
+
+        if (!passenger) {
+            // Clean up challenge even on failure
+            try { await prisma.authChallenge.delete({ where: { id: challengeId } }); } catch (e) { }
+            return NextResponse.json({ error: 'Credencial biométrica no está registrada en el sistema.' }, { status: 404 });
+        }
+
+        // 3. Verify the match
         const verification = await verifyAuthenticationResponse({
             response,
             expectedChallenge,
@@ -40,20 +50,29 @@ export async function POST(request: Request) {
 
         const { newCounter } = authenticationInfo;
 
-        // Log the transport (attendance) and update counter
+        // 4. Log the transport (attendance) and update counter
         await prisma.$transaction([
             prisma.passenger.update({
-                where: { id },
+                where: { id: passenger.id },
                 data: { counter: BigInt(newCounter) }
             }),
             prisma.transport.create({
-                data: { passengerId: id }
+                data: { passengerId: passenger.id }
             })
         ]);
 
-        deleteChallenge(id);
+        // Clean up challenge
+        try { await prisma.authChallenge.delete({ where: { id: challengeId } }); } catch (e) { }
 
-        return NextResponse.json({ verified: true, message: 'Authentication successful and attendance logged' });
+        return NextResponse.json({
+            verified: true,
+            message: 'Authentication successful and attendance logged',
+            passenger: {
+                id: passenger.id,
+                name: passenger.name,
+                lastName: passenger.lastName
+            }
+        });
     } catch (error: any) {
         console.error('WebAuthn Auth Verify Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

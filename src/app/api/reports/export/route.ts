@@ -6,20 +6,33 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const dateParam = searchParams.get('date');
+        const startDateParam = searchParams.get('startDate');
+        const endDateParam = searchParams.get('endDate');
 
         let dateFilter = {};
+        let filename = 'asistencia_completa';
+
         if (dateParam) {
-            const startOfDay = new Date(dateParam);
+            const date = new Date(dateParam);
+            const startOfDay = new Date(date);
             startOfDay.setUTCHours(0, 0, 0, 0);
-            const endOfDay = new Date(dateParam);
+            const endOfDay = new Date(date);
             endOfDay.setUTCHours(23, 59, 59, 999);
 
             dateFilter = {
-                timestamp: {
-                    gte: startOfDay,
-                    lte: endOfDay,
-                }
+                timestamp: { gte: startOfDay, lte: endOfDay }
             };
+            filename = `asistencia_${dateParam}`;
+        } else if (startDateParam && endDateParam) {
+            const start = new Date(startDateParam);
+            start.setUTCHours(0, 0, 0, 0);
+            const end = new Date(endDateParam);
+            end.setUTCHours(23, 59, 59, 999);
+
+            dateFilter = {
+                timestamp: { gte: start, lte: end }
+            };
+            filename = `asistencia_del_${startDateParam}_al_${endDateParam}`;
         }
 
         const attendanceRecords = await prisma.transport.findMany({
@@ -89,7 +102,7 @@ export async function GET(request: Request) {
 
         // Set proper headers
         response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        response.headers.set('Content-Disposition', `attachment; filename="asistencia_${dateParam || 'completa'}.xlsx"`);
+        response.headers.set('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
 
         return response;
     } catch (error: any) {

@@ -14,6 +14,14 @@ export default function MasterDashboard() {
     // Success State
     const [registeredUser, setRegisteredUser] = useState<{ id: string, name: string, lastName: string } | null>(null);
 
+    // Report Filtering State
+    const [reportParams, setReportParams] = useState({
+        mode: 'today' as 'today' | 'single' | 'range',
+        date: new Date().toISOString().split('T')[0],
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0]
+    });
+
     const handleSaveUserData = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -75,6 +83,18 @@ export default function MasterDashboard() {
             downloadLink.click();
         };
         img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    };
+
+    const getReportUrl = () => {
+        const baseUrl = '/api/reports/export';
+        if (reportParams.mode === 'today') {
+            const today = new Date().toISOString().split('T')[0];
+            return `${baseUrl}?date=${today}`;
+        }
+        if (reportParams.mode === 'single') {
+            return `${baseUrl}?date=${reportParams.date}`;
+        }
+        return `${baseUrl}?startDate=${reportParams.startDate}&endDate=${reportParams.endDate}`;
     };
 
     return (
@@ -216,11 +236,84 @@ export default function MasterDashboard() {
                     </div>
                 </div>
 
-                <div className="mt-8">
-                    <a href="/api/reports/export" target="_blank" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 font-semibold bg-white dark:bg-zinc-900 px-6 py-4 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        Descargar Listado de Asistencia (Excel)
-                    </a>
+                <div className="mt-10 w-full max-w-xl">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+                        <div className="bg-green-600 p-6 text-white">
+                            <h2 className="text-lg font-bold flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                Gestión de Reportes
+                            </h2>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setReportParams({ ...reportParams, mode: 'today' })}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${reportParams.mode === 'today' ? 'bg-green-600 text-white shadow-md' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}
+                                >
+                                    Hoy
+                                </button>
+                                <button
+                                    onClick={() => setReportParams({ ...reportParams, mode: 'single' })}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${reportParams.mode === 'single' ? 'bg-green-600 text-white shadow-md' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}
+                                >
+                                    Por Fecha
+                                </button>
+                                <button
+                                    onClick={() => setReportParams({ ...reportParams, mode: 'range' })}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${reportParams.mode === 'range' ? 'bg-green-600 text-white shadow-md' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}
+                                >
+                                    Rango de Fechas
+                                </button>
+                            </div>
+
+                            <div className="grid gap-4 pt-2">
+                                {reportParams.mode === 'single' && (
+                                    <div className="animate-in fade-in slide-in-from-top-2">
+                                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Seleccionar Fecha</label>
+                                        <input
+                                            type="date"
+                                            value={reportParams.date}
+                                            onChange={(e) => setReportParams({ ...reportParams, date: e.target.value })}
+                                            className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white rounded-xl py-3 px-4 font-medium outline-none focus:ring-2 focus:ring-green-500"
+                                        />
+                                    </div>
+                                )}
+
+                                {reportParams.mode === 'range' && (
+                                    <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                                        <div>
+                                            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Desde</label>
+                                            <input
+                                                type="date"
+                                                value={reportParams.startDate}
+                                                onChange={(e) => setReportParams({ ...reportParams, startDate: e.target.value })}
+                                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white rounded-xl py-3 px-4 font-medium outline-none focus:ring-2 focus:ring-green-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Hasta</label>
+                                            <input
+                                                type="date"
+                                                value={reportParams.endDate}
+                                                onChange={(e) => setReportParams({ ...reportParams, endDate: e.target.value })}
+                                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white rounded-xl py-3 px-4 font-medium outline-none focus:ring-2 focus:ring-green-500"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <a
+                                href={getReportUrl()}
+                                target="_blank"
+                                className="w-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold py-4 rounded-xl shadow-lg hover:bg-zinc-800 dark:hover:bg-zinc-50 transition-all flex items-center justify-center gap-3 mt-4"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                {reportParams.mode === 'today' ? 'Descargar Reporte de Hoy' : 'Buscar y Descargar Excel'}
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </LoginGate>

@@ -43,7 +43,7 @@ export async function GET(request: Request) {
             { header: 'Fecha y Hora', key: 'timestamp', width: 20 },
         ];
 
-        attendanceRecords.forEach((record, index) => {
+        attendanceRecords.forEach((record: any, index: number) => {
             sheet.addRow({
                 nro: index + 1,
                 id: record.passenger.id,

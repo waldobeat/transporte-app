@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         const verification = await verifyAuthenticationResponse({
             response,
             expectedChallenge,
-            expectedOrigin: getExpectedOrigin(request.url),
+            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || getExpectedOrigin(request.url),
             expectedRPID: getRpID(request.url),
             credential: {
                 id: passenger.credentialID,
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ verified: true, message: 'Authentication successful and attendance logged' });
     } catch (error: any) {
+        console.error('WebAuthn Auth Verify Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

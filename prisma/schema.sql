@@ -6,6 +6,7 @@ CREATE TABLE "Passenger" (
     "credentialID" TEXT NOT NULL,
     "credentialPK" TEXT NOT NULL,
     "counter" BIGINT NOT NULL DEFAULT 0,
+    "currentChallenge" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );

@@ -17,8 +17,9 @@ export async function POST(request: Request) {
         const verification = await verifyRegistrationResponse({
             response,
             expectedChallenge,
-            expectedOrigin: getExpectedOrigin(request.url),
+            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || getExpectedOrigin(request.url),
             expectedRPID: getRpID(request.url),
+            requireUserVerification: true,
         });
 
         const { verified, registrationInfo } = verification;
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ verified: true });
     } catch (error: any) {
+        console.error('WebAuthn Verify Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

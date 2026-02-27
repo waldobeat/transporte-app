@@ -40,16 +40,42 @@ export async function GET(request: Request) {
             { header: 'ID', key: 'id', width: 15 },
             { header: 'Nombres', key: 'names', width: 20 },
             { header: 'Apellidos', key: 'lastNames', width: 25 },
-            { header: 'Fecha y Hora', key: 'timestamp', width: 20 },
+            { header: 'Día', key: 'dayName', width: 15 },
+            { header: 'Fecha', key: 'dateStr', width: 15 },
+            { header: 'Hora', key: 'timeStr', width: 15 },
         ];
 
         attendanceRecords.forEach((record: any, index: number) => {
+            const dateObj = record.timestamp;
+
+            // Format to "Viernes"
+            const dayName = new Intl.DateTimeFormat('es-ES', { weekday: 'long', timeZone: 'America/Santiago' }).format(dateObj);
+            const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+            // Format to "02-02-2026"
+            const dateStr = new Intl.DateTimeFormat('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'America/Santiago'
+            }).format(dateObj).replace(/\//g, '-');
+
+            // Format to "7:00 AM"
+            const timeStr = new Intl.DateTimeFormat('es-ES', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/Santiago'
+            }).format(dateObj).toUpperCase();
+
             sheet.addRow({
                 nro: index + 1,
                 id: record.passenger.id,
                 names: record.passenger.name,
                 lastNames: record.passenger.lastName,
-                timestamp: record.timestamp.toLocaleString('es-ES', { timeZone: 'America/Santiago' }), // Adjust timezone if needed
+                dayName: capitalizedDay,
+                dateStr: dateStr,
+                timeStr: timeStr,
             });
         });
 

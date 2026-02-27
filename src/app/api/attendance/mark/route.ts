@@ -15,6 +15,33 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Pasajero no encontrado en el sistema' }, { status: 404 });
         }
 
+        // Check if already marked today
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const alreadyMarked = await prisma.transport.findFirst({
+            where: {
+                passengerId: id,
+                timestamp: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                }
+            }
+        });
+
+        if (alreadyMarked) {
+            return NextResponse.json({
+                error: 'Este pasajero ya marcó asistencia hoy',
+                passenger: {
+                    id: passenger.id,
+                    name: passenger.name,
+                    lastName: passenger.lastName
+                }
+            }, { status: 400 });
+        }
+
         // Register attendance (Transport)
         await prisma.transport.create({
             data: { passengerId: id }

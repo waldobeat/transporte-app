@@ -96,18 +96,32 @@ export default function DriverDashboard() {
                 <div className="max-w-md w-full h-screen flex flex-col bg-zinc-900 shadow-xl overflow-hidden relative">
 
                     {/* Header */}
-                    <header className="bg-zinc-900 text-white p-6 pb-6 flex-shrink-0 z-10 relative border-b border-zinc-800">
-                        <div className="flex justify-between items-center mb-6">
+                    <header className="bg-zinc-900 text-white p-4 pb-4 flex-shrink-0 z-10 relative border-b border-zinc-800">
+                        <div className="flex justify-between items-center">
                             <h1 className="text-xl font-bold flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /></svg>
-                                Escáner de Abordaje
+                                Escáner
                             </h1>
-                            <button
-                                onClick={() => { localStorage.removeItem('auth_driver'); window.location.href = '/'; }}
-                                className="text-zinc-400 hover:text-white text-sm bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full transition-colors"
-                            >
-                                Salir
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('¿Está seguro que desea enviar la lista y finalizar el turno?')) {
+                                            localStorage.removeItem('driver_scan_session');
+                                            window.location.reload();
+                                        }
+                                    }}
+                                    disabled={records.length === 0}
+                                    className="bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md"
+                                >
+                                    Enviar Lista
+                                </button>
+                                <button
+                                    onClick={() => { localStorage.removeItem('auth_driver'); window.location.href = '/'; }}
+                                    className="text-zinc-400 hover:text-white text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-lg transition-colors"
+                                >
+                                    Salir
+                                </button>
+                            </div>
                         </div>
                     </header>
 
@@ -201,18 +215,8 @@ export default function DriverDashboard() {
                         </div>
                     </div>
 
-                    {/* Footer Fixed Action */}
-                    <div className="bg-zinc-950 border-t border-zinc-900 p-4 relative z-10 w-full">
-                        <button
-                            onClick={() => {
-                                localStorage.removeItem('driver_scan_session');
-                                window.location.reload();
-                            }}
-                            disabled={records.length === 0}
-                            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all"
-                        >
-                            <span>Completar Viaje</span>
-                        </button>
+                    {/* Footer Fixed Action removed as it's now in header */}
+                    <div className="bg-zinc-950 p-2 relative z-10 w-full">
                         {/* Add keyframes strictly for the scanning line */}
                         <style dangerouslySetInnerHTML={{
                             __html: `
@@ -225,7 +229,7 @@ export default function DriverDashboard() {
                     </div>
 
                 </div>
-            </div>
-        </LoginGate>
+            </div >
+        </LoginGate >
     );
 }

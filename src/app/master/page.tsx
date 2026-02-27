@@ -40,7 +40,8 @@ export default function MasterDashboard() {
                 if (err.name === 'NotAllowedError') { // User cancelled
                     throw new Error('Operación cancelada o denegada.');
                 }
-                throw new Error('Error al interactuar con el autenticador.');
+                // Show the exact error the browser throws to understand why the Android authenticator fails
+                throw new Error(`Error del autenticador: ${err.name} - ${err.message}`);
             }
 
             // 3. Verify response

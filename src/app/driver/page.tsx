@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import LoginGate from '@/components/LoginGate';
 
 type PassengerRecord = {
     id: string;
@@ -72,131 +73,138 @@ export default function DriverDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center">
-            <div className="max-w-md w-full h-screen flex flex-col bg-zinc-900 shadow-xl overflow-hidden relative">
+        <LoginGate role="driver">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center">
+                <div className="max-w-md w-full h-screen flex flex-col bg-zinc-900 shadow-xl overflow-hidden relative">
 
-                {/* Header */}
-                <header className="bg-zinc-900 text-white p-6 pb-6 flex-shrink-0 z-10 relative border-b border-zinc-800">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-xl font-bold flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /></svg>
-                            Escáner de Abordaje
-                        </h1>
-                        <a href="/" className="text-zinc-400 hover:text-white text-sm bg-zinc-800 px-3 py-1.5 rounded-full transition-colors">Salir</a>
-                    </div>
-                </header>
-
-                {/* Main Content Area (Scanner + List) */}
-                <div className="flex-1 overflow-hidden flex flex-col bg-black relative">
-
-                    {/* The Camera Viewport */}
-                    <div className="relative w-full aspect-square bg-zinc-950 flex items-center justify-center">
-                        {!isScanning ? (
+                    {/* Header */}
+                    <header className="bg-zinc-900 text-white p-6 pb-6 flex-shrink-0 z-10 relative border-b border-zinc-800">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-xl font-bold flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /></svg>
+                                Escáner de Abordaje
+                            </h1>
                             <button
-                                onClick={() => setIsScanning(true)}
-                                className="bg-blue-600 hover:bg-blue-500 text-white w-48 h-48 rounded-full flex flex-col items-center justify-center gap-3 shadow-2xl transition-transform active:scale-95"
+                                onClick={() => { localStorage.removeItem('auth_driver'); window.location.href = '/'; }}
+                                className="text-zinc-400 hover:text-white text-sm bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full transition-colors"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>
-                                <span className="font-bold text-lg">Activar Escáner</span>
+                                Salir
                             </button>
-                        ) : (
-                            <div className="w-full h-full relative">
-                                <Scanner
-                                    onScan={handleScan}
-                                    onError={(e) => console.log('Scanner Error:', e)}
-                                    formats={['qr_code']}
-                                    components={{
-                                        onOff: true, // Flashlight
-                                    }}
-                                    styles={{
-                                        container: { height: '100%', width: '100%' },
-                                        video: { objectFit: 'cover' }
-                                    }}
-                                />
-                                {/* Custom Overlay Grid for UI aesthetics */}
-                                <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40 z-10">
-                                    <div className="w-full h-full border-2 border-green-500/50 rounded-xl relative shadow-[0_0_0_999px_rgba(0,0,0,0.4)]">
-                                        {/* Corner brackets */}
-                                        <div className="absolute top-[-2px] left-[-2px] w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-lg"></div>
-                                        <div className="absolute top-[-2px] right-[-2px] w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-lg"></div>
-                                        <div className="absolute bottom-[-2px] left-[-2px] w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-lg"></div>
-                                        <div className="absolute bottom-[-2px] right-[-2px] w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-lg"></div>
-
-                                        {/* Scanning Line Animation */}
-                                        <div className="w-full h-0.5 bg-green-500 absolute top-1/2 left-0 animate-[scan_2s_ease-in-out_infinite] opacity-70 blur-[1px]"></div>
-                                    </div>
-                                </div>
-                                {/* Stop Button Overlay */}
-                                <button
-                                    onClick={() => setIsScanning(false)}
-                                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-2 rounded-full font-bold shadow-lg z-20 hover:bg-red-500 backdrop-blur"
-                                >
-                                    Detener Cámara
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Feedback Messages Layer */}
-                    {message && (
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-3/4 animate-in zoom-in slide-in-from-bottom-4 duration-200">
-                            <div className={`p-6 rounded-2xl shadow-2xl text-center font-bold text-lg ${message.type === 'success' ? 'bg-green-500 text-white border-4 border-green-400' : 'bg-red-600 text-white border-4 border-red-500'}`}>
-                                {message.text}
-                            </div>
                         </div>
-                    )}
+                    </header>
 
-                    {/* Historical List */}
-                    <div className="flex-1 bg-zinc-950 overflow-y-auto p-4 space-y-3">
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            Historial de Abordaje ({records.length})
-                        </h3>
+                    {/* Main Content Area (Scanner + List) */}
+                    <div className="flex-1 overflow-hidden flex flex-col bg-black relative">
 
-                        {records.length === 0 ? (
-                            <div className="text-center text-zinc-600 mt-10">Esperando escaneos...</div>
-                        ) : (
-                            records.map((rec, i) => (
-                                <div key={i} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold uppercase overflow-hidden">
-                                            {rec.name ? rec.name.substring(0, 2) : rec.id.substring(0, 2)}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-white text-lg">{rec.name || rec.id}</p>
-                                            <p className="text-xs text-zinc-500">C.I: {rec.id}</p>
+                        {/* The Camera Viewport */}
+                        <div className="relative w-full aspect-square bg-zinc-950 flex items-center justify-center">
+                            {!isScanning ? (
+                                <button
+                                    onClick={() => setIsScanning(true)}
+                                    className="bg-blue-600 hover:bg-blue-500 text-white w-48 h-48 rounded-full flex flex-col items-center justify-center gap-3 shadow-2xl transition-transform active:scale-95"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>
+                                    <span className="font-bold text-lg">Activar Escáner</span>
+                                </button>
+                            ) : (
+                                <div className="w-full h-full relative">
+                                    <Scanner
+                                        onScan={handleScan}
+                                        onError={(e) => console.log('Scanner Error:', e)}
+                                        formats={['qr_code']}
+                                        components={{
+                                            onOff: true, // Flashlight
+                                        }}
+                                        styles={{
+                                            container: { height: '100%', width: '100%' },
+                                            video: { objectFit: 'cover' }
+                                        }}
+                                    />
+                                    {/* Custom Overlay Grid for UI aesthetics */}
+                                    <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40 z-10">
+                                        <div className="w-full h-full border-2 border-green-500/50 rounded-xl relative shadow-[0_0_0_999px_rgba(0,0,0,0.4)]">
+                                            {/* Corner brackets */}
+                                            <div className="absolute top-[-2px] left-[-2px] w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-lg"></div>
+                                            <div className="absolute top-[-2px] right-[-2px] w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-lg"></div>
+                                            <div className="absolute bottom-[-2px] left-[-2px] w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-lg"></div>
+                                            <div className="absolute bottom-[-2px] right-[-2px] w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-lg"></div>
+
+                                            {/* Scanning Line Animation */}
+                                            <div className="w-full h-0.5 bg-green-500 absolute top-1/2 left-0 animate-[scan_2s_ease-in-out_infinite] opacity-70 blur-[1px]"></div>
                                         </div>
                                     </div>
-                                    <div className="text-sm font-bold text-green-500 bg-green-500/10 px-3 py-1 rounded-full">
-                                        {rec.timestamp}
-                                    </div>
+                                    {/* Stop Button Overlay */}
+                                    <button
+                                        onClick={() => setIsScanning(false)}
+                                        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-2 rounded-full font-bold shadow-lg z-20 hover:bg-red-500 backdrop-blur"
+                                    >
+                                        Detener Cámara
+                                    </button>
                                 </div>
-                            ))
-                        )}
-                    </div>
-                </div>
+                            )}
+                        </div>
 
-                {/* Footer Fixed Action */}
-                <div className="bg-zinc-950 border-t border-zinc-900 p-4 relative z-10 w-full">
-                    <button
-                        onClick={() => window.location.reload()}
-                        disabled={records.length === 0}
-                        className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all"
-                    >
-                        <span>Completar Viaje</span>
-                    </button>
-                    {/* Add keyframes strictly for the scanning line */}
-                    <style dangerouslySetInnerHTML={{
-                        __html: `
+                        {/* Feedback Messages Layer */}
+                        {message && (
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-3/4 animate-in zoom-in slide-in-from-bottom-4 duration-200">
+                                <div className={`p-6 rounded-2xl shadow-2xl text-center font-bold text-lg ${message.type === 'success' ? 'bg-green-500 text-white border-4 border-green-400' : 'bg-red-600 text-white border-4 border-red-500'}`}>
+                                    {message.text}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Historical List */}
+                        <div className="flex-1 bg-zinc-950 overflow-y-auto p-4 space-y-3">
+                            <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                Historial de Abordaje ({records.length})
+                            </h3>
+
+                            {records.length === 0 ? (
+                                <div className="text-center text-zinc-600 mt-10">Esperando escaneos...</div>
+                            ) : (
+                                records.map((rec, i) => (
+                                    <div key={i} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold uppercase overflow-hidden">
+                                                {rec.name ? rec.name.substring(0, 2) : rec.id.substring(0, 2)}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-white text-lg">{rec.name || rec.id}</p>
+                                                <p className="text-xs text-zinc-500">C.I: {rec.id}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm font-bold text-green-500 bg-green-500/10 px-3 py-1 rounded-full">
+                                            {rec.timestamp}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer Fixed Action */}
+                    <div className="bg-zinc-950 border-t border-zinc-900 p-4 relative z-10 w-full">
+                        <button
+                            onClick={() => window.location.reload()}
+                            disabled={records.length === 0}
+                            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all"
+                        >
+                            <span>Completar Viaje</span>
+                        </button>
+                        {/* Add keyframes strictly for the scanning line */}
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
                         @keyframes scan {
                             0% { transform: translateY(-100px); }
                             50% { transform: translateY(100px); }
                             100% { transform: translateY(-100px); }
                         }
                     `}} />
-                </div>
+                    </div>
 
+                </div>
             </div>
-        </div>
+        </LoginGate>
     );
 }

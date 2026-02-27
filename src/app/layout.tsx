@@ -27,7 +27,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="flex flex-col min-h-screen">
+          <main className="flex-1">
+            {children}
+          </main>
+          <footer className="w-full text-center py-6 text-sm text-zinc-500 font-medium bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800">
+            Desarrollado por Jesus Infante &bull; Impulsado por REACT
+          </footer>
+        </div>
       </body>
     </html>
   );

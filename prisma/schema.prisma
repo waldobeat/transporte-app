@@ -13,7 +13,6 @@ model Passenger {
   credentialID     String      @unique
   credentialPK     String
   counter          BigInt      @default(0)
-  currentChallenge String?
   transports       Transport[]
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
@@ -24,10 +23,4 @@ model Transport {
   passengerId String
   passenger   Passenger @relation(fields: [passengerId], references: [id])
   timestamp   DateTime  @default(now())
-}
-
-model AuthChallenge {
-  id        String   @id @default(uuid())
-  challenge String
-  createdAt DateTime @default(now())
 }

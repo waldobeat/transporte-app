@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import LoginGate from '@/components/LoginGate';
 
@@ -16,6 +16,18 @@ export default function DriverDashboard() {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const lastScannedIdRef = useRef<string | null>(null);
     const cooldownRef = useRef(false);
+
+    // Load session on mount
+    useEffect(() => {
+        const savedSession = localStorage.getItem('driver_scan_session');
+        if (savedSession) {
+            try {
+                setRecords(JSON.parse(savedSession));
+            } catch (e) {
+                console.error("Failed to parse saved session", e);
+            }
+        }
+    }, []);
 
     const handleScan = async (detectedCodes: any[]) => {
         if (!detectedCodes || detectedCodes.length === 0 || cooldownRef.current) return;
@@ -49,11 +61,17 @@ export default function DriverDashboard() {
             }
 
             // Success
-            setRecords(prev => [{
-                id: data.passenger.id,
-                timestamp: new Date().toLocaleTimeString('es-ES'),
-                name: `${data.passenger.name} ${data.passenger.lastName}`
-            }, ...prev]);
+            setRecords(prev => {
+                const newRecords = [{
+                    id: data.passenger.id,
+                    timestamp: new Date().toLocaleTimeString('es-ES'),
+                    name: `${data.passenger.name} ${data.passenger.lastName}`
+                }, ...prev];
+
+                // Save to local storage to persist across reloads
+                localStorage.setItem('driver_scan_session', JSON.stringify(newRecords));
+                return newRecords;
+            });
 
             setMessage({ type: 'success', text: `✅ Acceso: ${data.passenger.name}` });
 
@@ -186,7 +204,10 @@ export default function DriverDashboard() {
                     {/* Footer Fixed Action */}
                     <div className="bg-zinc-950 border-t border-zinc-900 p-4 relative z-10 w-full">
                         <button
-                            onClick={() => window.location.reload()}
+                            onClick={() => {
+                                localStorage.removeItem('driver_scan_session');
+                                window.location.reload();
+                            }}
                             disabled={records.length === 0}
                             className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all"
                         >

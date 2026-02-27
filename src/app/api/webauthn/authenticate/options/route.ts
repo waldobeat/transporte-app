@@ -19,9 +19,10 @@ export async function POST(request: Request) {
         const options = await generateAuthenticationOptions({
             rpID: getRpID(request.url),
             allowCredentials: [{
-                id: passenger.credentialID, // base64url string
+                id: passenger.credentialID,
+                transports: ['internal'], // Prefer built-in scanners
             }],
-            userVerification: 'preferred',
+            userVerification: 'required',
         });
 
         saveChallenge(id, options.challenge);

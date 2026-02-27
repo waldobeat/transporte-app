@@ -28,8 +28,9 @@ export async function POST(request: Request) {
             // Optionally provide a user display name
             userDisplayName: `${name} ${lastName}`,
             authenticatorSelection: {
-                residentKey: 'preferred',
-                userVerification: 'preferred',
+                residentKey: 'required',
+                userVerification: 'required',
+                authenticatorAttachment: 'platform',
             },
             // You could set timeout here
         });

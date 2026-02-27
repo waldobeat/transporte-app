@@ -14,7 +14,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Passenger not found' }, { status: 404 });
         }
 
-        const expectedChallenge = getExpectedChallenge(id);
+        const expectedChallenge = await getExpectedChallenge(id);
         if (!expectedChallenge) {
             return NextResponse.json({ error: 'Challenge expired or not found' }, { status: 400 });
         }

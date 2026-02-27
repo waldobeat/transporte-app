@@ -9,7 +9,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { id, name, lastName, response } = body;
 
-        const expectedChallenge = getExpectedChallenge(id);
+        const expectedChallenge = await getExpectedChallenge(id);
         if (!expectedChallenge) {
             return NextResponse.json({ error: 'Challenge expired or not found' }, { status: 400 });
         }

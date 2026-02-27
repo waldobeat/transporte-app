@@ -7,9 +7,9 @@ import prisma from '@/lib/prisma';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { id, name, lastName, response } = body;
+        const { id, name, lastName, response, tempId } = body;
 
-        const expectedChallenge = await getExpectedChallenge(id);
+        const expectedChallenge = await getExpectedChallenge(tempId);
         if (!expectedChallenge) {
             return NextResponse.json({ error: 'Challenge expired or not found' }, { status: 400 });
         }
@@ -34,6 +34,13 @@ export async function POST(request: Request) {
         const credentialID = credential.id;
         const credentialPK = Buffer.from(credential.publicKey).toString('base64url');
 
+        // Check if final ID exists
+        const existing = await prisma.passenger.findUnique({ where: { id } });
+        if (existing) {
+            try { await prisma.passenger.delete({ where: { id: tempId } }); } catch (e) { }
+            return NextResponse.json({ error: 'La Cédula/ID ya está registrada' }, { status: 400 });
+        }
+
         await prisma.passenger.create({
             data: {
                 id,
@@ -45,7 +52,7 @@ export async function POST(request: Request) {
             }
         });
 
-        deleteChallenge(id);
+        try { await prisma.passenger.delete({ where: { id: tempId } }); } catch (e) { }
 
         return NextResponse.json({ verified: true });
     } catch (error: any) {

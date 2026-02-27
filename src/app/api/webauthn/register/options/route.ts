@@ -6,27 +6,15 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { id, name, lastName } = body;
-
-        if (!id || !name || !lastName) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        const existing = await prisma.passenger.findUnique({ where: { id } });
-        if (existing) {
-            return NextResponse.json({ error: 'Passenger already exists' }, { status: 400 });
-        }
-
         const rpID = getRpID(request.url);
+        const tempId = crypto.randomUUID();
 
         // Using base64url or just string based on SimpleWebAuthn version
         const options = await generateRegistrationOptions({
             rpName,
             rpID,
-            userName: `${name} ${lastName}`,
-            // Optionally provide a user display name
-            userDisplayName: `${name} ${lastName}`,
+            userName: `user_${tempId}`,
+            userDisplayName: 'Nuevo Pasajero',
             authenticatorSelection: {
                 residentKey: 'required',
                 userVerification: 'required',
@@ -35,9 +23,9 @@ export async function POST(request: Request) {
             // You could set timeout here
         });
 
-        saveChallenge(id, options.challenge);
+        await saveChallenge(tempId, options.challenge);
 
-        return NextResponse.json(options);
+        return NextResponse.json({ options, tempId });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
